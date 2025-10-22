@@ -1,5 +1,8 @@
 from langgraph.graph import MessagesState
 from langchain_core.messages import AIMessage
+from langchain_google_genai import ChatGoogleGenerativeAI
+
+llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash")
 
 class State(MessagesState):
     customer_name: str
@@ -7,14 +10,17 @@ class State(MessagesState):
     
 
 def node_1(state: State):
-    history = state["messages"]
+    new_state: State = {}
     if state.get("customer_name") is None:
-        return {"customer_name": "Alice"}
+        new_state["customer_name"] = "John Doe"
     else: 
-        ai_message = AIMessage(content=f"Hello {state.get('customer_name')}, how can I help you today?")
-        return {
-            "messages": [ai_message]
-        }
+        new_state["my_age"] = 30
+        
+    history = state["messages"]
+    ai_message = llm.invoke(history)
+    new_state["messages"] = [ai_message]
+    return new_state
+
 
 from langgraph.graph import StateGraph, START, END
 
